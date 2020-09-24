@@ -10,15 +10,12 @@ import { BrowserRouter as Router, Switch, Route, Redirect } from 'react-router-d
 import { ThemeProvider } from 'styled-components';
 import { UserContext } from '../userContext';
 import { MyContext } from "../context.js"
+import axios from "axios"
 
 import { Jumbotron, Navbar, Nav, Col } from 'react-bootstrap';
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import 'antd/dist/antd.css';
-
-import AWS from 'aws-sdk';
-
-import S3 from 'react-aws-s3';
 
 
 
@@ -43,125 +40,188 @@ const Upload = (props) => {
 
 
 
+  async function fileUpload(e) {
+    console.log(e)
+    e.preventDefault();
+    console.log(fileInput.current.files)
+    if (fileInput.current.files.length > 1) {
+      multipleFileUploadHandler();
+    } else {
+      singleFileUploadHandler();
+    }
 
+  }
 
 
   const [deleteBool, setDeleteBool] = useState(false);
 
   let fileList = {};
 
-  // function getSignedRequest(file) {
-  //   return fetch(`${serverUrl}/sign-s3?fileName=${file.name}&fileType=${file.type}`)
-  //     .then(response => {
-  //       if (!response.ok) {
-  //         throw new Error(`${response.status}: ${response.statusText}`);
-  //       }
-  //       return response.json();
-  //     });
-  // }
-
-  // callApi = async () => {
-  //   const response = await fetch('/api/hello');
-  //   const body = await response.json();
-  //   if (response.status !== 200) throw Error(body.message);
-
-  //   return body;
-  // };
-
-
-  const callApi = async () => {
-    const response = await fetch('/api/hello');
-    const body = await response.text();
-    if (response.status !== 200) throw Error(body.message);
-
-    console.log(body)
-
-    return body;
+  const singleFileUploadHandler = () => {
+    const data = new FormData();// If file selected
+    if (fileInput.current.files[0]) {
+      data.append('profileImage', fileInput.current.files[0], fileInput.current.files[0].name);
+      axios.post('http://localhost:5000/api/profile/profile-img-upload', data, {
+        headers: {
+          'accept': 'application/json',
+          'Accept-Language': 'en-US,en;q=0.8',
+          'Content-Type': `multipart/form-data; boundary=${data._boundary}`,
+        }
+      })
+        .then((response) => {
+          if (200 === response.status) {
+            // If file size is larger than expected.
+            if (response.data.error) {
+              if ('LIMIT_FILE_SIZE' === response.data.error.code) {
+                ocShowAlert('Max size: 2MB', 'red');
+              } else {
+                console.log(response.data);// If not the given file type
+                ocShowAlert(response.data.error, 'red');
+              }
+            } else {
+              // Success
+              let fileName = response.data;
+              console.log('fileName', fileName);
+              ocShowAlert('File Uploaded', '#3089cf');
+            }
+          }
+        }).catch((error) => {
+          // If another error
+          ocShowAlert(error, 'red');
+        });
+    } else {
+      // if file not selected throw error
+      ocShowAlert('Please upload file', 'red');
+    }
   };
+  const multipleFileUploadHandler = () => {
+    const data = new FormData();
+    console.log(fileInput.current.files)
+    console.log("hiiiii")
+    let selectedFiles = fileInput.current.files;// If file selected
+    if (selectedFiles) {
+      for (let i = 0; i < selectedFiles.length; i++) {
+        data.append('galleryImage', selectedFiles[i], selectedFiles[i].name);
+      } axios.post('http://localhost:5000/api/profile/upload', data, {
+        headers: {
+          'accept': 'application/json',
+          'Accept-Language': 'en-US,en;q=0.8',
+          'Content-Type': `multipart/form-data; boundary=${data._boundary}`,
+        }
+      })
+        .then((response) => {
+          console.log('res', response); if (200 === response.status) {
+            // If file size is larger than expected.
+            if (response.data.error) {
+              if ('LIMIT_FILE_SIZE' === response.data.error.code) {
+                ocShowAlert('Max size: 2MB', 'red');
+              } else if ('LIMIT_UNEXPECTED_FILE' === response.data.error.code) {
+                ocShowAlert('Max 4 images allowed', 'red');
+              } else {
+                // If not the given ile type
+                ocShowAlert(response.data.error, 'red');
+              }
+            } else {
+              // Success
+              let fileName = response.data;
+              console.log('fileName', fileName);
+              ocShowAlert('File Uploaded', '#3089cf');
+            }
+          }
+        }).catch((error) => {
+          // If another error
+          ocShowAlert(error, 'red');
+        });
+    } else {
+      // if file not selected throw error
+      ocShowAlert('Please upload file', 'red');
+    }
+  };// ShowAlert Function
+  const ocShowAlert = (message, background = '#3089cf') => {
 
-  async function uploadFiles(e) {
-    e.preventDefault();
-    const response = await fetch('/api/world', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ post: fileInput.current.files[0].name }),
-    });
-    const body = await response.text();
+    setTimeout(function () {
+      alert(message)
+    }, 3000);
 
-    console.log(body)
-  };
-
-
-  //   e.preventDefault();
-
-  //   console.log(process.env.REACT_APP_AWS_BUCKET_NAME)
-  //   console.log(process.env.REACT_APP_AWS_REGION)
-  //   console.log(process.env.REACT_APP_AWS_ACCESS_KEY_ID)
-  //   console.log(process.env.REACT_APP_AWS_SECRET_ACCESS_KEY)
-
-  //   const config = {
-  //     bucketName: process.env.REACT_APP_AWS_BUCKET_NAME,
-  //     region: process.env.REACT_APP_AWS_REGION,
-  //     accessKeyId: process.env.REACT_APP_AWS_ACCESS_KEY_ID,
-  //     secretAccessKey: process.env.REACT_APP_AWS_SECRET_ACCESS_KEY,
-  //   }
-
-
-  //   const ReactS3Client = new S3(config);
-
-  //   console.log(ReactS3Client)
-
-  //   let file = fileInput.current.files[0]
-  //   let fileName = fileInput.current.files[0].name
-  //   ReactS3Client
-  //     .uploadFile(file, fileName)
-  //     .then(data => console.log(data))
-  //     .catch(err => console.error(err))
-
-  //   /**
-  //    * {
-  //    *   Response: {
-  //    *     bucket: "myBucket",
-  //    *     key: "image/test-image.jpg",
-  //    *     location: "https://myBucket.s3.amazonaws.com/media/test-file.jpg"
-  //    *   }
-  //    * }
-  //    */
-  // };
-
-
-
-  const addToList = (e) => {
-    e.preventDefault();
-    fileList = e.target.files
-    console.log(fileList)
   }
 
+  // const addToList = (e) => {
+  //   console.log(e)
+  //   e.preventDefault();
+  //   fileList = e.target.files
+  //   console.log(fileList)
+  // }
+
+  function handleClick(e) {
+    e.preventDefault();
+
+    axios.get('http://localhost:5000/')
+      .then((response) => {
+        if (200 === response.status) {
+          // If file size is larger than expected.
+          if (response.data.error) {
+            if ('LIMIT_FILE_SIZE' === response.data.error.code) {
+              ocShowAlert('Max size: 2MB', 'red');
+            } else {
+              console.log(response.data);// If not the given file type
+              ocShowAlert(response.data.error, 'red');
+            }
+          } else {
+            // Success
+            let fileName = response.data;
+            console.log('fileName', fileName);
+            ocShowAlert('File Uploaded', '#3089cf');
+          }
+        }
+      })
+
+
+
+
+
+    console.log('The link was clicked.');
+  }
+
+
   useEffect(() => {
-    callApi();
-    console.log(context.state.user)
+    // callApi();
     setUser(auth.currentUser)
     if (auth.currentUser) {
       setValue(auth.currentUser);
     }
 
   }, [context.state.user])
+  if (document.getElementById("form")) {
+
+    document.getElementById("form").addEventListener("submit", function (event) {
+      event.preventDefault()
+    });
+  }
+
 
   return (
     <React.Fragment>
 
 
       {user ? <div>
-        <form action="/upload" method="post" enctype="multipart/form-data">
+        {/* <form onSubmit={fileUpload}>
           <div><h2>Upload images</h2></div>
           <h3>Images</h3>
-          <input type="file" multiple />
+          <input type="file" multiple onChange={handleClick} ref={fileInput} />
           <label>Amazon<input name="amazon" type="checkbox" value="amazon" /></label>
           <label>Shopify<input name="shopify" type="checkbox" value="shopify" /></label>
 
-          <button type="submit" >Submit</button>
+          <button type="submit">Submit</button>
+        </form> */}
+
+        <form onSubmit={handleClick} id="form" method="POST" action="http://localhost:5000/api/upload" encType="multipart/form-data">
+          <div>
+            <label>Select your profile picture:</label>
+            <input type="file" multiple name="profile_pic" />
+          </div>
+          <div>
+            <input type="submit" name="btn_upload_profile_pic" value="Upload" />
+          </div>
         </form>
 
 

@@ -150,11 +150,13 @@ const Upload = (props) => {
 
   }
 
-  function uploadRequest(file, name) {
-    console.log(file, name)
+  function uploadRequest(files) {
+    console.log(typeof (files))
     let data = new FormData();
-    data.append('file', file);
-    data.append('name', name);
+    Object.values(files).forEach((f) => {
+      data.append('file', f)
+    })
+    // data.append('file', files);
     let mail = { 'processData': false };
     let firstname = { 'contentType': 'file' };
     console.log(data)
@@ -174,20 +176,13 @@ const Upload = (props) => {
   // Component method
   const handleFileUpload = (e) => {
     e.preventDefault();
-    const file = fileInput.current.files[0];
+    const file = fileInput.current.files;
     console.log(file)
     uploadRequest(
-      file,
-      file.name
+      file
     )
   }
 
-  // const addToList = (e) => {
-  //   console.log(e)
-  //   e.preventDefault();
-  //   fileList = e.target.files
-  //   console.log(fileList)
-  // }
 
   function handleClick(e) {
     e.preventDefault();

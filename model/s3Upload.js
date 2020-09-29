@@ -14,6 +14,7 @@ router.post('/upload', multipleUpload, function (req, res) {
   console.log("getting here 14")
   // console.log(req)
   const file = req.files;
+  console.log(JSON.stringify(req.headers));
 
   Object.values(file).forEach((f) => {
     console.log(f)
@@ -32,13 +33,16 @@ router.post('/upload', multipleUpload, function (req, res) {
   var ResponseData = [];
   // s3.config.loadFromPath('./config.json');
 
-  s3.listBuckets(function (err, data) {
-    if (err) {
-      console.log("Error", err);
-    } else {
-      console.log("Success", data.Buckets);
-    }
-  });
+  // s3.listBuckets(function (err, data) {
+  //   if (err) {
+  //     console.log("Error", err);
+  //   } else {
+  //     console.log("Success", data.Buckets);
+  //   }
+  // });
+
+  let userName = req.headers['username'];
+  let date = req.headers['timestamp'];
 
   file.map((item) => {
     console.log("mapping files")
@@ -46,7 +50,7 @@ router.post('/upload', multipleUpload, function (req, res) {
     var params = {
       Bucket: "filter-user-upload-bucket",
       Region: 'us-east-1',
-      Key: item.originalname,
+      Key: userName + "/" + date + "/" + "preprocess" + "/" + item.originalname,
       Body: item.buffer
     };
     s3.upload(params, function (err, data) {

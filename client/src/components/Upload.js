@@ -160,9 +160,18 @@ const Upload = (props) => {
     let mail = { 'processData': false };
     let firstname = { 'contentType': 'file' };
     console.log(data)
+    console.log(user)
 
 
-    axios.post('http://localhost:5000/api/upload', data)
+
+    axios.post('http://localhost:5000/api/upload', data, {
+      headers:
+      {
+        'userName': user.displayName,
+        'timeStamp': Date.now()
+
+      }
+    })
       .then(response => console.log(response))
       .catch(error => console.log(error))
 

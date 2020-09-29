@@ -42,6 +42,14 @@ function SignUp() {
 
 
       firebase.auth().createUserWithEmailAndPassword(email, password).then(function (data) {
+        var user = firebase.auth().currentUser;
+        user.updateProfile({
+          displayName: userName
+        }).then(function () {
+          console.log("username added")
+        }, function (error) {
+          console.log("username not added")
+        });
         console.log(data.user.uid);
         message.success("successfully signed up!");
         setHidden(!hidden);

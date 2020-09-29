@@ -40,109 +40,146 @@ const Upload = (props) => {
 
 
 
-  async function fileUpload(e) {
-    console.log(e)
-    e.preventDefault();
-    console.log(fileInput.current.files)
-    if (fileInput.current.files.length > 1) {
-      multipleFileUploadHandler();
-    } else {
-      singleFileUploadHandler();
-    }
+  // async function fileUpload(e) {
+  //   console.log(e)
+  //   e.preventDefault();
+  //   console.log(e)
+  //   console.log(fileInput.current.files)
+  //   if (fileInput.current.files.length > 1) {
+  //     console.log("multiple file upload")
+  //     multipleFileUploadHandler();
 
-  }
+  //   } else {
+  //     console.log("single file upload")
+  //     singleFileUploadHandler();
+
+  //   }
+
+  // }
 
 
   const [deleteBool, setDeleteBool] = useState(false);
 
   let fileList = {};
 
-  const singleFileUploadHandler = () => {
-    const data = new FormData();// If file selected
-    if (fileInput.current.files[0]) {
-      data.append('profileImage', fileInput.current.files[0], fileInput.current.files[0].name);
-      axios.post('http://localhost:5000/api/profile/profile-img-upload', data, {
-        headers: {
-          'accept': 'application/json',
-          'Accept-Language': 'en-US,en;q=0.8',
-          'Content-Type': `multipart/form-data; boundary=${data._boundary}`,
-        }
-      })
-        .then((response) => {
-          if (200 === response.status) {
-            // If file size is larger than expected.
-            if (response.data.error) {
-              if ('LIMIT_FILE_SIZE' === response.data.error.code) {
-                ocShowAlert('Max size: 2MB', 'red');
-              } else {
-                console.log(response.data);// If not the given file type
-                ocShowAlert(response.data.error, 'red');
-              }
-            } else {
-              // Success
-              let fileName = response.data;
-              console.log('fileName', fileName);
-              ocShowAlert('File Uploaded', '#3089cf');
-            }
-          }
-        }).catch((error) => {
-          // If another error
-          ocShowAlert(error, 'red');
-        });
-    } else {
-      // if file not selected throw error
-      ocShowAlert('Please upload file', 'red');
-    }
-  };
-  const multipleFileUploadHandler = () => {
-    const data = new FormData();
-    console.log(fileInput.current.files)
-    console.log("hiiiii")
-    let selectedFiles = fileInput.current.files;// If file selected
-    if (selectedFiles) {
-      for (let i = 0; i < selectedFiles.length; i++) {
-        data.append('galleryImage', selectedFiles[i], selectedFiles[i].name);
-      } axios.post('http://localhost:5000/api/profile/upload', data, {
-        headers: {
-          'accept': 'application/json',
-          'Accept-Language': 'en-US,en;q=0.8',
-          'Content-Type': `multipart/form-data; boundary=${data._boundary}`,
-        }
-      })
-        .then((response) => {
-          console.log('res', response); if (200 === response.status) {
-            // If file size is larger than expected.
-            if (response.data.error) {
-              if ('LIMIT_FILE_SIZE' === response.data.error.code) {
-                ocShowAlert('Max size: 2MB', 'red');
-              } else if ('LIMIT_UNEXPECTED_FILE' === response.data.error.code) {
-                ocShowAlert('Max 4 images allowed', 'red');
-              } else {
-                // If not the given ile type
-                ocShowAlert(response.data.error, 'red');
-              }
-            } else {
-              // Success
-              let fileName = response.data;
-              console.log('fileName', fileName);
-              ocShowAlert('File Uploaded', '#3089cf');
-            }
-          }
-        }).catch((error) => {
-          // If another error
-          ocShowAlert(error, 'red');
-        });
-    } else {
-      // if file not selected throw error
-      ocShowAlert('Please upload file', 'red');
-    }
-  };// ShowAlert Function
+  // const singleFileUploadHandler = () => {
+  //   const data = new FormData();// If file selected
+  //   if (fileInput.current.files[0]) {
+  //     data.append('profileImage', fileInput.current.files[0], fileInput.current.files[0].name);
+  //     axios.post('http://localhost:5000/api/upload', data, {
+  //       headers: {
+  //         'accept': 'application/json',
+  //         'Accept-Language': 'en-US,en;q=0.8',
+  //         'Content-Type': `multipart/form-data; boundary=${data._boundary}`,
+  //       }
+  //     })
+  //       .then((response) => {
+  //         if (200 === response.status) {
+  //           // If file size is larger than expected.
+  //           if (response.data.error) {
+  //             if ('LIMIT_FILE_SIZE' === response.data.error.code) {
+  //               ocShowAlert('Max size: 2MB', 'red');
+  //             } else {
+  //               console.log(response.data);// If not the given file type
+  //               ocShowAlert(response.data.error, 'red');
+  //             }
+  //           } else {
+  //             // Success
+  //             let fileName = response.data;
+  //             console.log('fileName', fileName);
+  //             ocShowAlert('File Uploaded', '#3089cf');
+  //           }
+  //         }
+  //       }).catch((error) => {
+  //         // If another error
+  //         ocShowAlert(error, 'red');
+  //       });
+  //   } else {
+  //     // if file not selected throw error
+  //     ocShowAlert('Please upload file', 'red');
+  //   }
+  // };
+  // const multipleFileUploadHandler = () => {
+  //   const data = new FormData();
+  //   console.log(fileInput.current.files)
+  //   console.log("hiiiii")
+  //   let selectedFiles = fileInput.current.files;// If file selected
+  //   if (selectedFiles) {
+  //     for (let i = 0; i < selectedFiles.length; i++) {
+  //       data.append('galleryImage', selectedFiles[i], selectedFiles[i].name);
+  //     } axios.post('http://localhost:5000/api/upload', data, {
+  //       headers: {
+  //         'accept': 'application/json',
+  //         'Accept-Language': 'en-US,en;q=0.8',
+  //         'Content-Type': `multipart/form-data; boundary=${data._boundary}`,
+  //       }
+  //     })
+  //       .then((response) => {
+  //         console.log('res', response); if (200 === response.status) {
+  //           // If file size is larger than expected.
+  //           if (response.data.error) {
+  //             if ('LIMIT_FILE_SIZE' === response.data.error.code) {
+  //               ocShowAlert('Max size: 2MB', 'red');
+  //             } else if ('LIMIT_UNEXPECTED_FILE' === response.data.error.code) {
+  //               ocShowAlert('Max 4 images allowed', 'red');
+  //             } else {
+  //               // If not the given ile type
+  //               ocShowAlert(response.data.error, 'red');
+  //             }
+  //           } else {
+  //             // Success
+  //             let fileName = response.data;
+  //             console.log('fileName', fileName);
+  //             ocShowAlert('File Uploaded', '#3089cf');
+  //           }
+  //         }
+  //       }).catch((error) => {
+  //         // If another error
+  //         ocShowAlert(error, 'red');
+  //       });
+  //   } else {
+  //     // if file not selected throw error
+  //     ocShowAlert('Please upload file', 'red');
+  //   }
+  // };// ShowAlert Function
   const ocShowAlert = (message, background = '#3089cf') => {
 
     setTimeout(function () {
       alert(message)
     }, 3000);
 
+  }
+
+  function uploadRequest(file, name) {
+    console.log(file, name)
+    let data = new FormData();
+    data.append('file', file);
+    data.append('name', name);
+    let mail = { 'processData': false };
+    let firstname = { 'contentType': 'file' };
+    console.log(data)
+
+
+    axios.post('http://localhost:5000/api/upload', data)
+      .then(response => console.log(response))
+      .catch(error => console.log(error))
+
+  }
+
+  /*
+   ... A lot of Redux / React boilerplate happens here 
+   like mapDispatchToProps and mapStateToProps and @connect ...
+  */
+
+  // Component method
+  const handleFileUpload = (e) => {
+    e.preventDefault();
+    const file = fileInput.current.files[0];
+    console.log(file)
+    uploadRequest(
+      file,
+      file.name
+    )
   }
 
   // const addToList = (e) => {
@@ -214,10 +251,10 @@ const Upload = (props) => {
           <button type="submit">Submit</button>
         </form> */}
 
-        <form onSubmit={handleClick} id="form" method="POST" action="http://localhost:5000/api/upload" encType="multipart/form-data">
+        <form onSubmit={handleFileUpload}>
           <div>
             <label>Select your profile picture:</label>
-            <input type="file" multiple name="profile_pic" />
+            <input type="file" multiple name="profile_pic" ref={fileInput} />
           </div>
           <div>
             <input type="submit" name="btn_upload_profile_pic" value="Upload" />

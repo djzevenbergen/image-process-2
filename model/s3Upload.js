@@ -158,6 +158,13 @@ var storage = multer.memoryStorage({
   }
 });
 
+var fs = require('fs'),
+  S3FS = require('s3fs'),
+  s3fsImpl = new S3FS("filter-user-upload-bucket", {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+  });
+
 
 // var multipleUpload = multer({ storage: storage }).array('file');
 // var upload = multer({ storage: storage }).single('file');
@@ -178,11 +185,23 @@ AWS.config.update({ region: 'us-east-1' });
 
 const s3 = new AWS.S3();
 console.log("i'm here")
-router.post('/upload', function (req, res) {
+router.post('/upload', type, function (req, res) {
+
+  console.log(req.file); // file passed from client
+  console.log(req.body["name"]);
+
+  const params = {
+    Bucket: "filter-user-upload-bucket",
+    Key: req.body["name"], // File name you want to save as in S3
+    Body: req.file
+  };
 
   let upload = multer({ storage: storage }).array('file');
 
-  console.log("req" + req.file.name)
+  // Object.values(req).forEach((r) => {
+  //   console.log(r)
+  // })
+  // console.log("req" + req)
 
   upload(req, res, function (err) {
     // req.file contains information of uploaded file
@@ -201,6 +220,17 @@ router.post('/upload', function (req, res) {
       return res.send(err);
     }
 
+    // var base64data = new Buffer(, 'binary')
+
+    console.log(params)
+
+    // Uploading files to the bucket
+    s3.upload(params, function (err, data) {
+      if (err) {
+        throw err;
+      }
+      console.log(`File uploaded successfully. ${data.Location}`);
+    });
     // Display uploaded image for user validation
     res.send(`You have uploaded this image: <hr/><img src="${req.file.path}" width="500"><hr /><a href="./">Upload another image</a>`);
   });

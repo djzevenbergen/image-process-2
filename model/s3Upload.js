@@ -11,10 +11,8 @@ var multipleUpload = multer({ storage: storage }).array('file');
 var upload = multer({ storage: storage }).single('file');
 
 router.post('/upload', multipleUpload, function (req, res) {
-  console.log("getting here 14")
-  // console.log(req)
+  let error = false;
   const file = req.files;
-  console.log(JSON.stringify(req.headers));
 
   Object.values(file).forEach((f) => {
     console.log(f)
@@ -24,37 +22,30 @@ router.post('/upload', multipleUpload, function (req, res) {
 
   AWS.config.loadFromPath('./config.json');
 
-
-
   let s3 = new AWS.S3({ apiVersion: '2006-03-01' });
-  // s3.createBucket(function () {
-  //   //Where you want to store your file
-  //   console.log("getting here 19")
-  var ResponseData = [];
-  // s3.config.loadFromPath('./config.json');
 
-  // s3.listBuckets(function (err, data) {
-  //   if (err) {
-  //     console.log("Error", err);
-  //   } else {
-  //     console.log("Success", data.Buckets);
-  //   }
-  // });
+  var ResponseData = [];
 
   let userName = req.headers['username'];
   let date = req.headers['timestamp'];
-
+  let primaryVar;
   file.map((item) => {
     console.log("mapping files")
     console.log(item)
+    if (item['primary']) {
+      primaryVar = "primary/"
+    } else {
+      primaryVar = ''
+    }
     var params = {
       Bucket: "filter-user-upload-bucket",
       Region: 'us-east-1',
-      Key: userName + "/" + date + "/" + "preprocess" + "/" + item.originalname,
+      Key: userName + "/" + date + "/" + "preprocess" + "/" + primaryVar + item.originalname,
       Body: item.buffer
     };
     s3.upload(params, function (err, data) {
       if (err) {
+        error = true;
         res.json({ "error": true, "Message": err });
         console.log(err)
       } else {
@@ -66,62 +57,6 @@ router.post('/upload', multipleUpload, function (req, res) {
     });
   });
 
+
 });
 module.exports = router;
-
-
-/// this works for one file already on system
-
-// var express = require('express');
-// var router = express.Router();
-// var multer = require('multer');
-// var AWS = require('aws-sdk');
-// var storage = multer.memoryStorage({
-//   destination: function (req, file, callback) {
-//     callback(null, '');
-//   }
-// });
-
-// var fs = require('fs'),
-//   S3FS = require('s3fs'),
-//   s3fsImpl = new S3FS("filter-user-upload-bucket", {
-//     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-//     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
-//   });
-
-
-// // var multipleUpload = multer({ storage: storage }).array('file');
-// // var upload = multer({ storage: storage }).single('file');
-
-// var upload = multer({ dest: 'upload/' });
-
-// var type = upload.single('file');
-
-// AWS.config.getCredentials(function (err) {
-//   if (err) console.log(err.stack);
-//   // credentials not loaded
-//   else {
-//     console.log("Access key:", AWS.config.credentials.accessKeyId);
-//   }
-// });
-
-// AWS.config.update({ region: 'us-east-1' });
-
-// const s3 = new AWS.S3();
-// console.log("i'm here")
-// router.post('/upload', type, function (req, res) {
-
-//   // var file = req.file;
-//   var stream = fs.createReadStream('upload/20200802_212017 (1).jpg');
-//   return s3fsImpl.writeFile("file", stream).then(function () {
-//     fs.unlink('upload/20200802_212017 (1).jpg', function (err) {
-//       if (err) {
-//         console.error(err);
-//       }
-//     });
-//     res.status(200).end();
-//   });
-
-// })
-
-// module.exports = router;

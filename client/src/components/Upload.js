@@ -78,13 +78,26 @@ const Upload = (props) => {
     //     message.error(error.message)
     //   }
     // }
+    let mainUrl = "";
+    let otherUrls = "";
     console.log(amazon, shopify)
 
     console.log(mainList['main'])
 
     resp["data"]['Data'].forEach((d) => {
-      console.log(d["Bucket"], d["Key"])
+      let temp = d['Key'].split('/')
+      if (temp[temp.length - 1] == mainList['main']) {
+        console.log('this is the main', d["Bucket"], d["Key"])
+        mainUrl = d['Key']
+      }
+      else {
+        console.log(d["Bucket"], d["Key"])
+        otherUrls += d["Key"] + ","
+      }
+
     })
+
+    console.log(mainUrl, 'all the rest', otherUrls)
   }
 
   const handleFileUpload = (e) => {

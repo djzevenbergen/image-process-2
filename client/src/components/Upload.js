@@ -23,6 +23,9 @@ const theme = {
 const Upload = (props) => {
   const firestore = useFirestore();
   const [value, setValue] = useState(UserContext);
+  const [amazon, checkAmazon] = useState(false);
+  const [shopify, checkShopify] = useState(false);
+  const [mainPicName, checkName] = useState("")
   const fileInput = useRef();
   const primaryFile = useRef();
   const context = useContext(MyContext);
@@ -30,12 +33,23 @@ const Upload = (props) => {
   const auth = firebase.auth();
   const [deleteBool, setDeleteBool] = useState(false);
 
-  let fileList = {};
+  let mainList = {};
 
   const ocShowAlert = (message, background = '#3089cf') => {
     setTimeout(function () {
       alert(message)
     }, 3000);
+  }
+
+  const handleAmazonCheck = () => {
+    checkAmazon(!amazon)
+  }
+  const handleShopifyCheck = () => {
+    checkShopify(!shopify)
+  }
+  const handleAddMain = (name) => {
+    checkName(prevState => prevState + name)
+    console.log(mainPicName)
   }
 
   function uploadRequest(files) {
@@ -58,8 +72,18 @@ const Upload = (props) => {
   }
 
   const addInfoToDb = (resp) => {
+    //   try {
+    //     return firestore.collection("users").add({ userId: data.user.uid, email: data.user.email, username: userName, tracks: [] });
+    //   } catch (error) {
+    //     message.error(error.message)
+    //   }
+    // }
+    console.log(amazon, shopify)
+
+    console.log(mainList['main'])
+
     resp["data"]['Data'].forEach((d) => {
-      console.log(d)
+      console.log(d["Bucket"], d["Key"])
     })
   }
 
@@ -67,6 +91,9 @@ const Upload = (props) => {
     e.preventDefault();
     let mainPic = primaryFile.current.files;
     mainPic[0]['primary'] = true;
+    mainList["main"] = mainPic[0]["name"]
+
+    console.log(mainPic[0]["name"])
     let file = fileInput.current.files;
     file = [...file, mainPic[0]]
     console.log(mainPic)
@@ -104,13 +131,18 @@ const Upload = (props) => {
             <br></br>
             <label>Select the rest of your images:</label>
             <input type="file" multiple name="profile_pic" ref={fileInput} />
+            <br></br>
+            <label>For which platforms?</label>
+            <br></br>
+            <label>Amazon</label>
+            <input type="checkbox" value="amazon" onChange={handleAmazonCheck} />
+            <label>Shopify</label>
+            <input type="checkbox" value="shopify" onChange={handleShopifyCheck} />
           </div>
           <div>
             <input type="submit" name="btn_upload_profile_pic" value="Upload" />
           </div>
         </form>
-
-
       </div> :
         ""
       }

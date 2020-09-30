@@ -8,6 +8,7 @@ import { ThemeProvider } from 'styled-components';
 import { UserContext } from '../userContext';
 import { MyContext } from "../context.js"
 import axios from "axios"
+import { message } from "antd";
 import { Jumbotron, Navbar, Nav, Col } from 'react-bootstrap';
 import "bootstrap/dist/css/bootstrap.min.css";
 import 'antd/dist/antd.css';
@@ -25,6 +26,7 @@ const Upload = (props) => {
   const [value, setValue] = useState(UserContext);
   const [amazon, checkAmazon] = useState(false);
   const [shopify, checkShopify] = useState(false);
+  const [category, checkCategory] = useState("Lime");
   const [mainPicName, checkName] = useState("")
   const fileInput = useRef();
   const primaryFile = useRef();
@@ -46,6 +48,10 @@ const Upload = (props) => {
   }
   const handleShopifyCheck = () => {
     checkShopify(!shopify)
+  }
+  const handleCategory = (e) => {
+    checkCategory(e);
+    console.log(category)
   }
   const handleAddMain = (name) => {
     checkName(prevState => prevState + name)
@@ -72,30 +78,32 @@ const Upload = (props) => {
   }
 
   const addInfoToDb = (resp) => {
-    //   try {
-    //     return firestore.collection("users").add({ userId: data.user.uid, email: data.user.email, username: userName, tracks: [] });
-    //   } catch (error) {
-    //     message.error(error.message)
-    //   }
-    // }
+
     let mainUrl = "";
     let otherUrls = "";
     console.log(amazon, shopify)
-
+    console.log(category)
     console.log(mainList['main'])
 
     resp["data"]['Data'].forEach((d) => {
       let temp = d['Key'].split('/')
       if (temp[temp.length - 1] == mainList['main']) {
         console.log('this is the main', d["Bucket"], d["Key"])
-        mainUrl = d['Key']
+        mainUrl = d['Location']
       }
       else {
-        console.log(d["Bucket"], d["Key"])
-        otherUrls += d["Key"] + ","
+        console.log(d["Bucket"], d)
+        otherUrls += d["Location"] + "|"
       }
 
     })
+
+    try {
+      return firestore.collection("transactions").add({ user: user.displayName, mainPic: mainUrl, otherPics: otherUrls, category: category, amazon: amazon, shopify: shopify });
+    } catch (error) {
+      message.error(error.message)
+    }
+
 
     console.log(mainUrl, 'all the rest', otherUrls)
   }
@@ -151,6 +159,13 @@ const Upload = (props) => {
             <input type="checkbox" value="amazon" onChange={handleAmazonCheck} />
             <label>Shopify</label>
             <input type="checkbox" value="shopify" onChange={handleShopifyCheck} />
+            <br></br>
+            <select value={category} onChange={e => handleCategory(e.currentTarget.value)}>
+              <option value="grapefruit">Grapefruit</option>
+              <option value="lime">Lime</option>
+              <option value="coconut">Coconut</option>
+              <option value="mango">Mango</option>
+            </select>
           </div>
           <div>
             <input type="submit" name="btn_upload_profile_pic" value="Upload" />

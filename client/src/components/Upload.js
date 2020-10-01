@@ -21,13 +21,50 @@ const theme = {
   white: '#e6f1ff',
 };
 
+const categories = {
+  'Appliances': ' ',
+  'Apps & Games': ' ',
+  'Arts, Crafts & Sewing': ' ',
+  'Automotive': ' ',
+  'Baby': ' ',
+  'Beauty & Personal Care': ' ',
+  'Books': ' ',
+  'CDs & Vinyl': ' ',
+  'Camera & Photo': ' ',
+  'Cell Phones': ' ',
+  'Clothing, Shoes & Jewelry': ' ',
+  'Collectible Currencies': ' ',
+  'Computers & Accessories': ' ',
+  'Digital Music': ' ',
+  'Electronics': ' ',
+  'Entertainment Collectibles ': ' ',
+  'Grocery & Gourmet Foods': ' ',
+  'Handmade Products': ' ',
+  'Health & Household': ' ',
+  'Home & Kitchen': ' ',
+  'Industrial & Scientific': ' ',
+  'Kitchen & Dining': ' ',
+  'Movies & TV': ' ',
+  'Musical Instruments': ' ',
+  'Office Products': ' ',
+  'Patio, Lawn & Garden': ' ',
+  'Pet Supplies': ' ',
+  'Software': ' ',
+  'Sports & Outdoors': ' ',
+  'Sports Collectibles': ' ',
+  'Tools & Home Improvements': ' ',
+  'Toys & Games': ' ',
+  'Video Games': ' '
+}
+
 const Upload = (props) => {
   const firestore = useFirestore();
   const [value, setValue] = useState(UserContext);
   const [amazon, checkAmazon] = useState(false);
   const [shopify, checkShopify] = useState(false);
-  const [category, checkCategory] = useState("Lime");
+  const [category, checkCategory] = useState('Appliances');
   const [mainPicName, checkName] = useState("")
+  // const [timeStamp, changeTime] = useState(0)
   const fileInput = useRef();
   const primaryFile = useRef();
   const context = useContext(MyContext);
@@ -36,6 +73,7 @@ const Upload = (props) => {
   const [deleteBool, setDeleteBool] = useState(false);
 
   let mainList = {};
+  let timeStamp = "";
 
   const ocShowAlert = (message, background = '#3089cf') => {
     setTimeout(function () {
@@ -53,6 +91,12 @@ const Upload = (props) => {
     checkCategory(e);
     console.log(category)
   }
+
+  // const changeTimeStamp = (t) => {
+  //   changeTime(t);
+  //   console.log(timeStamp)
+  // }
+
   const handleAddMain = (name) => {
     checkName(prevState => prevState + name)
     console.log(mainPicName)
@@ -66,7 +110,9 @@ const Upload = (props) => {
     })
     console.log(data)
     console.log(user)
-    axios.post('http://localhost:5000/api/upload', data, {
+
+    axios.post('https://infinite-gorge-14963.herokuapp.com/api/upload', data, {
+      // axios.post('http://localhost:5000/api/upload', data, {
       headers:
       {
         'userName': user.displayName,
@@ -87,6 +133,8 @@ const Upload = (props) => {
 
     resp["data"]['Data'].forEach((d) => {
       let temp = d['Key'].split('/')
+      console.log(temp[temp.length - 3])
+      timeStamp = temp[temp.length - 3]
       if (temp[temp.length - 1] == mainList['main']) {
         console.log('this is the main', d["Bucket"], d["Key"])
         mainUrl = d['Location']
@@ -95,15 +143,13 @@ const Upload = (props) => {
         console.log(d["Bucket"], d)
         otherUrls += d["Location"] + "|"
       }
-
     })
 
     try {
-      return firestore.collection("transactions").add({ user: user.displayName, mainPic: mainUrl, otherPics: otherUrls, category: category, amazon: amazon, shopify: shopify });
+      return firestore.collection("transactions").add({ user: user.displayName, timeStamp: timeStamp, mainPic: mainUrl, otherPics: otherUrls, category: category, amazon: amazon, shopify: shopify });
     } catch (error) {
       message.error(error.message)
     }
-
 
     console.log(mainUrl, 'all the rest', otherUrls)
   }
@@ -161,10 +207,9 @@ const Upload = (props) => {
             <input type="checkbox" value="shopify" onChange={handleShopifyCheck} />
             <br></br>
             <select value={category} onChange={e => handleCategory(e.currentTarget.value)}>
-              <option value="grapefruit">Grapefruit</option>
-              <option value="lime">Lime</option>
-              <option value="coconut">Coconut</option>
-              <option value="mango">Mango</option>
+              {Object.keys(categories).map((c) => (
+                <option value={c}>{c}</option>
+              ))}
             </select>
           </div>
           <div>
@@ -180,3 +225,7 @@ const Upload = (props) => {
 }
 
 export default withFirestore(Upload);
+
+
+
+

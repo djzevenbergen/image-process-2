@@ -56,6 +56,24 @@ const categories = {
   'Toys & Games': ' ',
   'Video Games': ' '
 }
+const prices = {
+
+  '$0-1.99': ' ',
+  '$2-10': ' ',
+  '$10.01- 30': ' ',
+  '$30.01- 50': ' ',
+  '$50.01-75': ' ',
+  '$75.01-100': ' ',
+  '$100.01-150': ' ',
+  '$150.01-200': ' ',
+  '$200.01-500': ' ',
+  '$500.01-1000': ' ',
+  '$1000.01-1500': ' ',
+  '$1500.01-2000': ' ',
+  '$2000.01-2750': ' ',
+  '$2750-$3500': ' ',
+  '$3500.01+': ' '
+}
 
 const Upload = (props) => {
   const firestore = useFirestore();
@@ -63,7 +81,9 @@ const Upload = (props) => {
   const [amazon, checkAmazon] = useState(false);
   const [shopify, checkShopify] = useState(false);
   const [category, checkCategory] = useState('Appliances');
+  const [price, checkPrice] = useState('$0-1.99')
   const [mainPicName, checkName] = useState("")
+  const [email, checkEmail] = useState(null)
   // const [timeStamp, changeTime] = useState(0)
   const fileInput = useRef();
   const primaryFile = useRef();
@@ -90,6 +110,14 @@ const Upload = (props) => {
   const handleCategory = (e) => {
     checkCategory(e);
     console.log(category)
+  }
+  const handlePrice = (e) => {
+    checkPrice(e);
+    console.log(price)
+  }
+  const handleEmail = (e) => {
+    checkEmail(e);
+    console.log(email)
   }
 
   // const changeTimeStamp = (t) => {
@@ -130,6 +158,7 @@ const Upload = (props) => {
     console.log(amazon, shopify)
     console.log(category)
     console.log(mainList['main'])
+    console.log(email)
 
     resp["data"]['Data'].forEach((d) => {
       let temp = d['Key'].split('/')
@@ -146,7 +175,7 @@ const Upload = (props) => {
     })
 
     try {
-      return firestore.collection("transactions").add({ user: user.displayName, timeStamp: timeStamp, mainPic: mainUrl, otherPics: otherUrls, category: category, amazon: amazon, shopify: shopify });
+      return firestore.collection("transactions").add({ user: user.displayName, timeStamp: timeStamp, mainPic: mainUrl, otherPics: otherUrls, category: category, amazon: amazon, shopify: shopify, price: price, email: email });
     } catch (error) {
       message.error(error.message)
     }
@@ -175,6 +204,7 @@ const Upload = (props) => {
     setUser(auth.currentUser)
     if (auth.currentUser) {
       setValue(auth.currentUser);
+      checkEmail(auth.currentUser.email)
     }
   }, [context.state.user])
   if (document.getElementById("form")) {
@@ -206,11 +236,20 @@ const Upload = (props) => {
             <label>Shopify</label>
             <input type="checkbox" value="shopify" onChange={handleShopifyCheck} />
             <br></br>
+            <label>Category</label>
             <select value={category} onChange={e => handleCategory(e.currentTarget.value)}>
               {Object.keys(categories).map((c) => (
                 <option value={c}>{c}</option>
               ))}
             </select>
+            <label>Price Range</label>
+            <select value={prices} onChange={e => handlePrice(e.currentTarget.value)}>
+              {Object.keys(prices).map((c) => (
+                <option value={c}>{c}</option>
+              ))}
+            </select>
+            <label>Email to:</label>
+            <input type="email" defaultValue={user.email} onChange={e => handleEmail(e.currentTarget.value)} />
           </div>
           <div>
             <input type="submit" name="btn_upload_profile_pic" value="Upload" />

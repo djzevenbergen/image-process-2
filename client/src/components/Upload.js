@@ -139,8 +139,8 @@ const Upload = (props) => {
     console.log(data)
     console.log(user)
 
-    axios.post('https://infinite-gorge-14963.herokuapp.com/api/upload', data, {
-      // axios.post('http://localhost:5000/api/upload', data, {
+    // axios.post('https://infinite-gorge-14963.herokuapp.com/api/upload', data, {
+    axios.post('http://localhost:5000/api/upload', data, {
       headers:
       {
         'userName': user.displayName,

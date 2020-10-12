@@ -91,6 +91,7 @@ const Upload = (props) => {
   const [user, setUser] = useState(null);
   const auth = firebase.auth();
   const [deleteBool, setDeleteBool] = useState(false);
+  const database = firebase.database();
 
   let mainList = {};
   let timeStamp = "";
@@ -139,8 +140,8 @@ const Upload = (props) => {
     console.log(data)
     console.log(user)
 
-    axios.post('https://infinite-gorge-14963.herokuapp.com/api/upload', data, {
-      // axios.post('http://localhost:5000/api/upload', data, {
+    // axios.post('https://infinite-gorge-14963.herokuapp.com/api/upload', data, {
+    axios.post('http://localhost:5000/api/upload', data, {
       headers:
       {
         'userName': user.displayName,
@@ -162,6 +163,7 @@ const Upload = (props) => {
 
     resp["data"]['Data'].forEach((d) => {
       let temp = d['Key'].split('/')
+      console.log(d)
       console.log(temp[temp.length - 3])
       timeStamp = temp[temp.length - 3]
       if (temp[temp.length - 1] == mainList['main']) {
@@ -175,6 +177,19 @@ const Upload = (props) => {
     })
 
     try {
+
+      firebase.database().ref('transactions/' + user.displayName + "_" + timeStamp).set({
+        timeStamp: timeStamp,
+        mainPic: mainUrl,
+        otherPics: otherUrls,
+        category: category,
+        amazon: amazon,
+        shopify: shopify,
+        price: price,
+        email: email
+      });
+
+
       return firestore.collection("transactions").add({ user: user.displayName, timeStamp: timeStamp, mainPic: mainUrl, otherPics: otherUrls, category: category, amazon: amazon, shopify: shopify, price: price, email: email });
     } catch (error) {
       message.error(error.message)

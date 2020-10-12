@@ -92,6 +92,7 @@ const Upload = (props) => {
   const auth = firebase.auth();
   const [deleteBool, setDeleteBool] = useState(false);
   const database = firebase.database();
+  const [successBool, checkSuccess] = useState(false);
 
   let mainList = {};
   let timeStamp = "";
@@ -120,6 +121,9 @@ const Upload = (props) => {
     checkEmail(e);
     console.log(email)
   }
+  const handleSuccess = (e) => {
+    checkSuccess(e)
+  }
 
   // const changeTimeStamp = (t) => {
   //   changeTime(t);
@@ -140,15 +144,15 @@ const Upload = (props) => {
     console.log(data)
     console.log(user)
 
-    axios.post('https://infinite-gorge-14963.herokuapp.com/api/upload', data, {
-      // axios.post('http://localhost:5000/api/upload', data, {
+    // axios.post('https://infinite-gorge-14963.herokuapp.com/api/upload', data, {
+    axios.post('http://localhost:5000/api/upload', data, {
       headers:
       {
         'userName': user.displayName,
         'timeStamp': Date.now()
       }
     })
-      .then(response => { addInfoToDb(response); console.log(response) })
+      .then(response => { addInfoToDb(response); handleSuccess(true); console.log(response) })
       .catch(error => console.log(error))
   }
 
@@ -274,6 +278,8 @@ const Upload = (props) => {
         ""
       }
       { console.log("screech")}
+
+      {successBool ? message.success("upload complete") : ""}
     </React.Fragment >
   );
 }
